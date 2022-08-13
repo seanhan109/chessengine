@@ -1,4 +1,5 @@
 import chess
+import chess.polyglot
 import copy
 
 POS_INF = 1000000000
@@ -13,43 +14,44 @@ class Player():
     def getMove(self, board): pass
 
     def eval(self, board, color):
-        
-        modified_board = copy.deepcopy(board)
-        modified_board.push(chess.Move.null())
-        if board.fullmove_number > 10:
-            eval = -modified_board.legal_moves.count()
-        else:
-            eval = 0
-        modified_board.pop()
-        lob = chess.SQUARES
-        for pos in lob:
-            piece = board.piece_at(pos)
-            if piece:
-                attack_eq = len(list(board.attackers(color, pos))) - len(list(board.attackers(not color, pos)))
-                if piece.color:
-                    if color:
-                        if pos in center_pos and piece.symbol == 'P':
-                            eval += 2
-                        eval += piece_values[piece.symbol()]
-                        eval += 0.1 * piece_values[piece.symbol()] * attack_eq
-                    else:
-                        if pos in center_pos and piece.symbol == 'p':
-                            eval -= 2
-                        eval -= piece_values[piece.symbol()]
-                        eval -= 0.1 * piece_values[piece.symbol()] * attack_eq
-                else:
-                    if not color:
-                        if pos in center_pos and piece.symbol == 'p':
-                            eval += 2
-                        eval += piece_values[piece.symbol()]
-                        eval += 0.1 * piece_values[piece.symbol()] * attack_eq
-                    else:
-                        if pos in center_pos and piece.symbol == 'P':
-                            eval -= 2
-                        eval -= piece_values[piece.symbol()]
-                        eval -= 0.1 * piece_values[piece.symbol()] * attack_eq
+        pass
+        # modified_board = copy.deepcopy(board)
+        # modified_board.push(chess.Move.null())
+        # if board.fullmove_number > 10:
+        #     eval = -modified_board.legal_moves.count()
+        # else:
+        #     eval = 0
+        # modified_board.pop()
+        # lob = chess.SQUARES
+        # for pos in lob:
+        #     piece = board.piece_at(pos)
+        #     if piece:
+        #         #-1 for the person in turn
+        #         attack_eq = len(list(board.attackers(color, pos))) - len(list(board.attackers(not color, pos))) + (1 if color else -1)
+        #         if piece.color:
+        #             if color:
+        #                 if pos in center_pos and piece.symbol == 'P':
+        #                     eval += 2
+        #                 eval += piece_values[piece.symbol()]
+        #                 eval += 0.1 * piece_values[piece.symbol()] * attack_eq
+        #             else:
+        #                 if pos in center_pos and piece.symbol == 'p':
+        #                     eval -= 2
+        #                 eval -= piece_values[piece.symbol()]
+        #                 eval -= 0.1 * piece_values[piece.symbol()] * attack_eq
+        #         else:
+        #             if not color:
+        #                 if pos in center_pos and piece.symbol == 'p':
+        #                     eval += 2
+        #                 eval += piece_values[piece.symbol()]
+        #                 eval += 0.1 * piece_values[piece.symbol()] * attack_eq
+        #             else:
+        #                 if pos in center_pos and piece.symbol == 'P':
+        #                     eval -= 2
+        #                 eval -= piece_values[piece.symbol()]
+        #                 eval -= 0.1 * piece_values[piece.symbol()] * attack_eq
 
-        return eval
+        # return eval
 
 class ChessBot(Player):
     def __init__(self, color, depth):
