@@ -14,9 +14,23 @@ class Player():
     def getMove(self, board): pass
 
     def eval(self, board, color):
-        with chess.polyglot.open_reader("baron30.bin") as reader:
-            for entry in reader.find_all(board):
-                print(entry.move,entry.weight,entry.learn)
+        eval = 0
+        lob = chess.SQUARES
+        for pos in lob:
+            piece = board.piece_at(pos)
+            if piece:
+                if piece.color:
+                    if color:
+                        eval += piece_values[piece.symbol()]
+                    else:
+                        eval -= piece_values[piece.symbol()]
+                else:
+                    if not color:
+                        eval += piece_values[piece.symbol()]
+                    else:
+                        eval -= piece_values[piece.symbol()]
+        return eval
+                
         # modified_board = copy.deepcopy(board)
         # modified_board.push(chess.Move.null())
         # if board.fullmove_number > 10:
@@ -61,7 +75,12 @@ class ChessBot(Player):
         self.depth = depth
 
     def getMove(self, board):
-        return self.max_value(board, self.depth, NEG_INF, POS_INF)[1]
+        with chess.polyglot.open_reader("baron30.bin") as reader:
+            pos = reader.get(board)
+            if pos:
+                return pos.move
+            else:
+                return self.max_value(board, self.depth, NEG_INF, POS_INF)[1]
 
     def max_value(self, board, curr_depth, a, b):
         if curr_depth == 0:
