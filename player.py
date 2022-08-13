@@ -14,7 +14,9 @@ class Player():
     def getMove(self, board): pass
 
     def eval(self, board, color):
-        pass
+        with chess.polyglot.open_reader("baron30.bin") as reader:
+            for entry in reader.find_all(board):
+                print(entry.move,entry.weight,entry.learn)
         # modified_board = copy.deepcopy(board)
         # modified_board.push(chess.Move.null())
         # if board.fullmove_number > 10:
