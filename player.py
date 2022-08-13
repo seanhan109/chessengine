@@ -1,16 +1,55 @@
-from chess import Board, Move, STARTING_FEN
+import chess
 import copy
 
 POS_INF = 1000000000
 NEG_INF = -1000000000
+piece_values = {'p':1, 'n':3, 'b':3, 'r':5, 'q':9,'k':0,'P':1,'N':3, 'B':3,'R':5,'Q':9,'K':0}
+center_pos = [chess.D4, chess.D5, chess.E5, chess.E4]
+#chess.D4, chess.D5, chess.E4, chess.E5 are very important squares
 
 class Player():
     def __init__(self, color): self.color = color
 
     def getMove(self, board): pass
 
-    def eval(self, board, symbol):
-        return board.legal_moves.count()
+    def eval(self, board, color):
+        
+        modified_board = copy.deepcopy(board)
+        modified_board.push(chess.Move.null())
+        if board.fullmove_number > 10:
+            eval = -modified_board.legal_moves.count()
+        else:
+            eval = 0
+        modified_board.pop()
+        lob = chess.SQUARES
+        for pos in lob:
+            piece = board.piece_at(pos)
+            if piece:
+                attack_eq = len(list(board.attackers(color, pos))) - len(list(board.attackers(not color, pos)))
+                if piece.color:
+                    if color:
+                        if pos in center_pos and piece.symbol == 'P':
+                            eval += 2
+                        eval += piece_values[piece.symbol()]
+                        eval += 0.1 * piece_values[piece.symbol()] * attack_eq
+                    else:
+                        if pos in center_pos and piece.symbol == 'p':
+                            eval -= 2
+                        eval -= piece_values[piece.symbol()]
+                        eval -= 0.1 * piece_values[piece.symbol()] * attack_eq
+                else:
+                    if not color:
+                        if pos in center_pos and piece.symbol == 'p':
+                            eval += 2
+                        eval += piece_values[piece.symbol()]
+                        eval += 0.1 * piece_values[piece.symbol()] * attack_eq
+                    else:
+                        if pos in center_pos and piece.symbol == 'P':
+                            eval -= 2
+                        eval -= piece_values[piece.symbol()]
+                        eval -= 0.1 * piece_values[piece.symbol()] * attack_eq
+
+        return eval
 
 class ChessBot(Player):
     def __init__(self, color, depth):
