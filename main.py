@@ -1,4 +1,5 @@
 from ast import AsyncFunctionDef
+from datetime import datetime
 import chess
 import player
 
@@ -15,6 +16,7 @@ if __name__ == '__main__':
     if p1.color == p2.color:
         raise Exception('Players must be different colors')
     while not (board.is_checkmate() or board.is_stalemate() or board.is_insufficient_material() or board.is_variant_end()):
+        start = datetime.now()
         print(board)
         print(' ')
         turn = board.turn
@@ -56,5 +58,6 @@ if __name__ == '__main__':
                         print('Illegal move. Try again.')
                 else:
                     board.push(p2.getMove(board))
+        print(datetime.now() - start)
     print(board)
     print(board.result())

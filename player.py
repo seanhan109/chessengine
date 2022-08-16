@@ -4,9 +4,6 @@ import copy
 
 POS_INF = 1000000000
 NEG_INF = -1000000000
-piece_values = {'p':1, 'n':3, 'b':3, 'r':5, 'q':9,'k':0,'P':1,'N':3, 'B':3,'R':5,'Q':9,'K':0}
-center_pos = [chess.D4, chess.D5, chess.E5, chess.E4]
-#chess.D4, chess.D5, chess.E4, chess.E5 are very important squares
 
 class Player():
     def __init__(self, color): self.color = color
@@ -14,73 +11,83 @@ class Player():
     def getMove(self, board): pass
 
     def eval(self, board, color):
+        
+        if board.outcome():
+            if board.outcome().winner == color:
+                return POS_INF
+            elif board.outcome().winner:
+                return NEG_INF
+            else:
+                return 0
         eval = 0
-        lob = chess.SQUARES
-        for pos in lob:
-            piece = board.piece_at(pos)
-            if piece:
-                if piece.color:
-                    if color:
-                        eval += piece_values[piece.symbol()]
-                    else:
-                        eval -= piece_values[piece.symbol()]
-                else:
-                    if not color:
-                        eval += piece_values[piece.symbol()]
-                    else:
-                        eval -= piece_values[piece.symbol()]
+        dsi = 0
+        bb = chess.BaseBoard(board.board_fen())
+        eval += len(bb.pieces(chess.PAWN, color)) + 3 * len(bb.pieces(chess.BISHOP, color)) + 3 * len(bb.pieces(chess.KNIGHT, color)) + 5 * len(bb.pieces(chess.ROOK, color)) + \
+            9 * len(bb.pieces(chess.QUEEN, color)) - (len(bb.pieces(chess.PAWN, not color)) + 3 * len(bb.pieces(chess.BISHOP, not color)) + 3 * len(bb.pieces(chess.KNIGHT, not color)) +\
+                 5 * len(bb.pieces(chess.ROOK, not color)) + 9 * len(bb.pieces(chess.QUEEN, not color)))
+        
+
+        pawns = bb.pieces(chess.PAWN, color)
+        files = chess.BB_FILES
+        for file in files:
+            if len(pawns.intersection(file)) > 1:
+                dsi -= 1
+        for pos in pawns:
+            if bb.piece_at(pos + 8):
+                dsi -= 1
+        for pos in pawns:
+            if pos % 8 == 0:
+                if len(pawns.intersection(files[1])) == 0:
+                    dsi -= 1
+            elif pos % 8 == 7:
+                if len(pawns.intersection(files[6])) == 0:
+                    dsi -= 1
+            else:
+                if len(pawns.intersection(files[pos % 8 - 1])) == 0 and len(pawns.intersection(files[pos % 8 + 1])) == 0:
+                    dsi -= 1
+        pawns = bb.pieces(chess.PAWN, not color)
+        for file in files:
+            if len(pawns.intersection(file)) > 1:
+                dsi += 1
+        for pos in pawns:
+            if bb.piece_at(pos - 8):
+                dsi += 1
+        for pos in pawns: 
+            if pos % 8 == 0:
+                if len(pawns.intersection(files[1])) == 0:
+                    dsi += 1
+            elif pos % 8 == 7:
+                if len(pawns.intersection(files[6])) == 0:
+                    dsi += 1
+            else:
+                if len(pawns.intersection(files[pos % 8 - 1])) == 0 and len(pawns.intersection(files[pos % 8 + 1])) == 0:
+                    dsi += 1
+        eval += 0.5 * dsi
+
+
+        modified_board = copy.deepcopy(board)
+        modified_board.push(chess.Move.null())
+        if board.turn == color:
+            eval += 0.1 * (board.legal_moves.count() - modified_board.legal_moves.count())
+        else:
+            eval += 0.1 * (modified_board.legal_moves.count() - board.legal_moves.count())
+        modified_board.pop()
         return eval
-                
-        # modified_board = copy.deepcopy(board)
-        # modified_board.push(chess.Move.null())
-        # if board.fullmove_number > 10:
-        #     eval = -modified_board.legal_moves.count()
-        # else:
-        #     eval = 0
-        # modified_board.pop()
-        # lob = chess.SQUARES
-        # for pos in lob:
-        #     piece = board.piece_at(pos)
-        #     if piece:
-        #         #-1 for the person in turn
-        #         attack_eq = len(list(board.attackers(color, pos))) - len(list(board.attackers(not color, pos))) + (1 if color else -1)
-        #         if piece.color:
-        #             if color:
-        #                 if pos in center_pos and piece.symbol == 'P':
-        #                     eval += 2
-        #                 eval += piece_values[piece.symbol()]
-        #                 eval += 0.1 * piece_values[piece.symbol()] * attack_eq
-        #             else:
-        #                 if pos in center_pos and piece.symbol == 'p':
-        #                     eval -= 2
-        #                 eval -= piece_values[piece.symbol()]
-        #                 eval -= 0.1 * piece_values[piece.symbol()] * attack_eq
-        #         else:
-        #             if not color:
-        #                 if pos in center_pos and piece.symbol == 'p':
-        #                     eval += 2
-        #                 eval += piece_values[piece.symbol()]
-        #                 eval += 0.1 * piece_values[piece.symbol()] * attack_eq
-        #             else:
-        #                 if pos in center_pos and piece.symbol == 'P':
-        #                     eval -= 2
-        #                 eval -= piece_values[piece.symbol()]
-        #                 eval -= 0.1 * piece_values[piece.symbol()] * attack_eq
-
-        # return eval
-
+       
+         
+###pls improve alpha beta pruning algo to be more efficientN
 class ChessBot(Player):
     def __init__(self, color, depth):
         super(ChessBot, self).__init__(color)
         self.depth = depth
 
     def getMove(self, board):
-        with chess.polyglot.open_reader("Balsa_v110221.pgn") as reader:
-
-            try:
+        with chess.polyglot.open_reader("baron30.bin") as reader:
+            pos = reader.get(board)
+            if pos:
                 pos = reader.weighted_choice(board)
                 return pos.move
-            except:
+            else:
                 return self.max_value(board, self.depth, NEG_INF, POS_INF)[1]
 
     def max_value(self, board, curr_depth, a, b):
