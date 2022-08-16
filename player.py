@@ -75,11 +75,12 @@ class ChessBot(Player):
         self.depth = depth
 
     def getMove(self, board):
-        with chess.polyglot.open_reader("baron30.bin") as reader:
-            pos = reader.get(board)
-            if pos:
+        with chess.polyglot.open_reader("Balsa_v110221.pgn") as reader:
+
+            try:
+                pos = reader.weighted_choice(board)
                 return pos.move
-            else:
+            except:
                 return self.max_value(board, self.depth, NEG_INF, POS_INF)[1]
 
     def max_value(self, board, curr_depth, a, b):
