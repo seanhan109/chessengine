@@ -6,7 +6,7 @@ import player
 if __name__ == '__main__':
     board = chess.Board()
 
-    p1_type = 'p'#input()
+    p1_type = 'b'#input()
     p2_type = 'b'#input()
     depth = int(input())
 

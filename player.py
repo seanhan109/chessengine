@@ -64,18 +64,19 @@ class Player():
                     dsi += 1
         eval += 0.5 * dsi
 
-
-        modified_board = copy.deepcopy(board)
-        modified_board.push(chess.Move.null())
+        board.push(chess.Move.null())
         if board.turn == color:
-            eval += 0.1 * (board.legal_moves.count() - modified_board.legal_moves.count())
+            eval += board.legal_moves.count()
+            board.push(chess.Move.null())
+            eval -= 0.1 * board.legal_moves.count()
         else:
-            eval += 0.1 * (modified_board.legal_moves.count() - board.legal_moves.count())
-        modified_board.pop()
+            eval -= board.legal_moves.count()
+            eval += 0.1 * board.legal_moves.count()
+        board.pop()
         return eval
        
          
-###pls improve alpha beta pruning algo to be more efficientN
+###pls improve alpha beta pruning algo to be more efficient
 class ChessBot(Player):
     def __init__(self, color, depth):
         super(ChessBot, self).__init__(color)
