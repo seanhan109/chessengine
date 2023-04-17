@@ -76,7 +76,6 @@ class Player():
         return eval
        
          
-###pls improve alpha beta pruning algo to be more efficient
 class ChessBot(Player):
     def __init__(self, color, depth):
         super(ChessBot, self).__init__(color)
@@ -93,12 +92,12 @@ class ChessBot(Player):
 
     def max_value(self, board, curr_depth, a, b):
         if curr_depth == 0:
-            return [self.eval(board, self.color), None]
+            return (self.eval(board, self.color), None)
         util = NEG_INF
         nm = None
         legalMoves = board.legal_moves
         if legalMoves.count() == 0:
-            return [self.eval(board, self.color), None]
+            return (self.eval(board, self.color), None)
         for move in legalMoves:
             modified_board = copy.deepcopy(board)
             modified_board.push(move)
@@ -107,18 +106,18 @@ class ChessBot(Player):
                 util = possible_util
                 nm = move
             if util >= b:
-                return [util, nm]
+                return (util, nm)
             a = max(a, util)
-        return [util, nm]
+        return (util, nm)
 
     def min_value(self, board, curr_depth, a, b):
         if curr_depth == 0:
-            return [self.eval(board, self.color),None]
+            return (self.eval(board, self.color),None)
         util = POS_INF
         nm = None
         legalMoves = board.legal_moves
         if legalMoves.count() == 0:
-            return [self.eval(board, self.color), None]
+            return (self.eval(board, self.color), None)
         for move in legalMoves:
             modified_board = copy.deepcopy(board)
             modified_board.push(move)
@@ -127,9 +126,9 @@ class ChessBot(Player):
                 util = possible_util
                 nm = move
             if util <= a:
-                return [util, nm]
+                return (util, nm)
             b = min(b, util)
-        return [util, nm]
+        return (util, nm)
 
 class HumanPlayer(Player):
     def __init__(self, color): super(HumanPlayer, self).__init__(color)
