@@ -130,4 +130,65 @@ import numpy as np
 
 
 def eval(board) -> int:
-    return 0         
+    if board.outcome():
+        if board.outcome().winner == color:
+            return POS_INF
+        elif board.outcome().winner:
+            return NEG_INF
+        else:
+            return 0
+    eval = 0
+    dsi = 0
+    bb = chess.BaseBoard(board.board_fen())
+    eval += len(bb.pieces(chess.PAWN, color)) + 3 * len(bb.pieces(chess.BISHOP, color)) + 3 * len(bb.pieces(chess.KNIGHT, color)) + 5 * len(bb.pieces(chess.ROOK, color)) + \
+        9 * len(bb.pieces(chess.QUEEN, color)) - (len(bb.pieces(chess.PAWN, not color)) + 3 * len(bb.pieces(chess.BISHOP, not color)) + 3 * len(bb.pieces(chess.KNIGHT, not color)) +\
+                5 * len(bb.pieces(chess.ROOK, not color)) + 9 * len(bb.pieces(chess.QUEEN, not color)))
+    
+
+    pawns = bb.pieces(chess.PAWN, color)
+    files = chess.BB_FILES
+    for file in files:
+        if len(pawns.intersection(file)) > 1:
+            dsi -= 1
+    for pos in pawns:
+        if bb.piece_at(pos + 8):
+            dsi -= 1
+    for pos in pawns:
+        if pos % 8 == 0:
+            if len(pawns.intersection(files[1])) == 0:
+                dsi -= 1
+        elif pos % 8 == 7:
+            if len(pawns.intersection(files[6])) == 0:
+                dsi -= 1
+        else:
+            if len(pawns.intersection(files[pos % 8 - 1])) == 0 and len(pawns.intersection(files[pos % 8 + 1])) == 0:
+                dsi -= 1
+    pawns = bb.pieces(chess.PAWN, not color)
+    for file in files:
+        if len(pawns.intersection(file)) > 1:
+            dsi += 1
+    for pos in pawns:
+        if bb.piece_at(pos - 8):
+            dsi += 1
+    for pos in pawns: 
+        if pos % 8 == 0:
+            if len(pawns.intersection(files[1])) == 0:
+                dsi += 1
+        elif pos % 8 == 7:
+            if len(pawns.intersection(files[6])) == 0:
+                dsi += 1
+        else:
+            if len(pawns.intersection(files[pos % 8 - 1])) == 0 and len(pawns.intersection(files[pos % 8 + 1])) == 0:
+                dsi += 1
+    eval += 0.5 * dsi
+
+    board.push(chess.Move.null())
+    if board.turn == color:
+        eval += board.legal_moves.count()
+        board.push(chess.Move.null())
+        eval -= 0.1 * board.legal_moves.count()
+    else:
+        eval -= board.legal_moves.count()
+        eval += 0.1 * board.legal_moves.count()
+    board.pop()
+    return eval       
