@@ -8,7 +8,7 @@ class FindMove():
     def __init__(self, board, max_depth):
         self.depth = max_depth
         self.board = board
-        self.next_move = []
+        self.trans_table = {}
     
     def alpha_beta(self, a, b, depth)->int:
         if depth == 0:
